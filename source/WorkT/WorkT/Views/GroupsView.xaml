@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="WorkT.Views.GroupsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.WP7"
+    mc:Ignorable="d"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    d:DesignHeight="480" d:DesignWidth="480" DataContext="{Binding}">
+    
+    <Grid x:Name="LayoutRoot" Background="{StaticResource PhoneBackgroundBrush}"
+          DataContext="{Binding Source={StaticResource Locator}, Path=GroupsListViewModel}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button Content="+" Name="AddButton" Command="{Binding Path=AddCommand}" />
+            <TextBlock Text="{Binding Source={StaticResource ResourceWrapper}, Path=ApplicationStrings.GroupAddTitle}" VerticalAlignment="Center" />
+
+            <Button Content="L" Name="LoadButton" Command="{Binding Path=LoadCommand}" />
+            <TextBlock Text="{Binding Source={StaticResource ResourceWrapper}, Path=ApplicationStrings.GroupsLoadTitle}" VerticalAlignment="Center" />
+        </StackPanel>
+        <ListBox Grid.Row="1" Margin="0,0,-12,0" ItemsSource="{Binding Groups}" >
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,17">
+                        <!--Replace rectangle with image-->
+                        <!--<Rectangle Height="100" Width="100" Fill="#FF626060" Margin="12,0,9,0"/>-->
+                        <StackPanel Width="311">
+                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap" Style="{StaticResource PhoneTextExtraLargeStyle}"/>
+                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Margin="12,-6,12,0" Style="{StaticResource PhoneTextSubtleStyle}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>

@@ -1,0 +1,86 @@
+﻿<phone:PhoneApplicationPage 
+    x:Class="WorkT.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:controls="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:cmd="clr-namespace:GalaSoft.MvvmLight.Command;assembly=GalaSoft.MvvmLight.WP7"
+    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800" 
+    d:DataContext="{d:DesignData SampleData/MainViewModelSampleData.xaml}"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait"  Orientation="Portrait"
+    shell:SystemTray.IsVisible="False" 
+    xmlns:views="clr-namespace:WorkT.Views">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+
+        <!--Panorama control-->
+        <controls:Panorama >
+            <controls:Panorama.Title>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0" Source="/WorkT;component/HeaderIcon.png" VerticalAlignment="Bottom" Visibility="Visible" Margin="0,20,0,0" Width="180" Height="Auto" />
+                    <TextBlock Grid.Column="1"  Text="workt" VerticalAlignment="Bottom" />
+                </Grid>
+            </controls:Panorama.Title>
+            <!--<controls:Panorama.Background>
+                <ImageBrush ImageSource="PanoramaBackground.png"/>
+            </controls:Panorama.Background>-->
+
+            <!--Panorama item one-->
+            <controls:PanoramaItem Header="menu">
+                <!--Double line list with text wrapping-->
+                <Grid >
+                    <views:NavigationMenuView />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <!--Panorama item one-->
+            <controls:PanoramaItem Header="about">
+                <!--Double line list with text wrapping-->
+                <Grid >
+                    <views:NavigationMenuView />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <!--Panorama item one-->
+            <controls:PanoramaItem Header="work tracks">
+                <!--Double line list with text wrapping-->
+                <Grid >
+                    <views:WorkTracksView HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="workTracksView" VerticalAlignment="Top" />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <!--Panorama item two-->
+            <!--Use 'Orientation="Horizontal"' to enable a panel that lays out horizontally-->
+            <controls:PanoramaItem Header="projects">
+                <!--Double line list with image placeholder and text wrapping-->
+                <Grid>
+                    <views:ProjectsView HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="projectsView" VerticalAlignment="Top" />
+                </Grid>
+            </controls:PanoramaItem>
+
+            <!--Panorama item three-->
+            <!--Use 'Orientation="Horizontal"' to enable a panel that lays out horizontally-->
+            <controls:PanoramaItem Header="{Binding Source={StaticResource ResourceWrapper}, Path=ApplicationStrings.GroupsTitle}"
+                    >
+                <!--Double line list with image placeholder and text wrapping-->
+                <Grid>
+                    <views:GroupsView HorizontalAlignment="Left" Margin="10,10,0,0" x:Name="groupsView" VerticalAlignment="Top" />
+                </Grid>
+            </controls:PanoramaItem>
+        </controls:Panorama>
+    </Grid>
+
+    <!--Panorama-based applications should not show an ApplicationBar-->
+
+</phone:PhoneApplicationPage>

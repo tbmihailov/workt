@@ -1,0 +1,5 @@
+D:\Programming\WP\WorkTracker\Source\WorkT\Community.CsharpSqlite.WP\Bin\Debug\Community.CsharpSqlite.WP.dll
+D:\Programming\WP\WorkTracker\Source\WorkT\Community.CsharpSqlite.WP\Bin\Debug\Community.CsharpSqlite.WP.pdb
+D:\Programming\WP\WorkTracker\Source\WorkT\Community.CsharpSqlite.WP\obj\Debug\Community.CsharpSqlite.WP.dll
+D:\Programming\WP\WorkTracker\Source\WorkT\Community.CsharpSqlite.WP\obj\Debug\Community.CsharpSqlite.WP.pdb
+D:\Programming\WP\WorkTracker\source\WorkT\Community.CsharpSqlite.WP\obj\Debug\Community.CsharpSqlite.WP.csprojResolveAssemblyReference.cache

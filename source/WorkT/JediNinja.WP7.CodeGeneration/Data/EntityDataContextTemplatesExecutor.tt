@@ -1,0 +1,54 @@
+<#@ template language="C#" hostspecific="True" debug="True" #>
+<#@ output extension="txt" #>
+<#@ include file="T4Toolbox.tt" #>
+<#@ Assembly Name="$(SolutionDir)\Libs\App.CodeGeneration.Model\WorkT.CodeGeneration.Model.dll" #>
+<#@ Import Namespace="WorkT.CodeGeneration.Model" #>
+<#@ Include File="EntityDataContextInterfaceTemplate.tt" #>
+<#@ Include File="EntityDataContextTemplate.tt" #>
+<#@ Include File="MainDataContextWithSpecificEntityOperations.tt" #>
+<#
+// <copyright file="EntityDataContextTemplateExecutor.tt" company="Jedi Ninja">
+//  Copyright © Todor Mihailov`. All Rights Reserved.
+// </copyright>
+	string dataContextsNamespace = "WorkT.Data";
+	string modelsNamespace = "WorkT.Model";
+	string outputProject = @"..\..\WorkT\WorkT.csproj"; 
+	string dataContextsFolder = @"Data";
+	string dataContextsFileFormat = string.Format(@"{0}\{{0}}.g.cs", dataContextsFolder);
+	   
+	//DataContextInterface template
+	EntityDataContextInterfaceTemplate dataContextInterfaceTemplate = new EntityDataContextInterfaceTemplate();
+	dataContextInterfaceTemplate.ModelType = typeof(Project);
+	dataContextInterfaceTemplate.ModelTypeNamePlural = "Projects";
+	dataContextInterfaceTemplate.ModelsNamespace = modelsNamespace;
+	dataContextInterfaceTemplate.EntityDataContextInterfaceName = string.Format("I{0}DataContext", dataContextInterfaceTemplate.ModelType.Name); ;
+	dataContextInterfaceTemplate.EntityDataContextsNamespace = dataContextsNamespace;
+	dataContextInterfaceTemplate.Output.File = string.Format(dataContextsFileFormat, dataContextInterfaceTemplate.EntityDataContextInterfaceName);
+	dataContextInterfaceTemplate.Output.Project = outputProject;
+	dataContextInterfaceTemplate.Render();
+
+	//DataContext template
+	EntityDataContextTemplate dataContextTemplate = new EntityDataContextTemplate();
+	dataContextTemplate.ModelType = typeof(Project);
+	dataContextTemplate.ModelTypeKeyPropertyName = "ProjectId";
+	dataContextTemplate.ModelTypeNamePlural = "Projects";
+	dataContextTemplate.ModelsNamespace = modelsNamespace;
+	dataContextTemplate.EntityDataContextName = string.Format("{0}DataContext", dataContextTemplate.ModelType.Name); ;
+	dataContextTemplate.EntityDataContextsNamespace = dataContextsNamespace;
+	dataContextTemplate.Output.File = string.Format(dataContextsFileFormat, dataContextTemplate.EntityDataContextName);
+	dataContextTemplate.Output.Project = outputProject;
+	dataContextTemplate.Render();
+
+	//MainDataContext with specific Entity operations template
+	MainDataContextWithSpecificEntityOperations mainDataContextTemplate = new MainDataContextWithSpecificEntityOperations();
+	mainDataContextTemplate.MainDataContextName = "WorkTrackerDataContext";
+	mainDataContextTemplate.ModelType = typeof(Project);
+	mainDataContextTemplate.ModelTypeKeyPropertyName = "ProjectId";
+	mainDataContextTemplate.ModelTypeNamePlural = "Projects";
+	mainDataContextTemplate.ModelsNamespace = modelsNamespace;
+	mainDataContextTemplate.EntityDataContextsNamespace = dataContextsNamespace;
+	mainDataContextTemplate.Output.File = string.Format(dataContextsFileFormat, mainDataContextTemplate.MainDataContextName + mainDataContextTemplate.ModelTypeNamePlural);
+	mainDataContextTemplate.Output.Project = outputProject;
+	mainDataContextTemplate.Render();
+	
+#>

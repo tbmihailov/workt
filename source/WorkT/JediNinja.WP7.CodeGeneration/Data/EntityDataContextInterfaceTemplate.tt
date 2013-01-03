@@ -1,0 +1,116 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+<#+
+// <copyright file="EntityDataContextInterfaceTemplate.tt" company="Microsoft">
+//  Copyright © Microsoft. All Rights Reserved.
+// </copyright>
+
+/// <summary>
+/// Generates EntityDataContext Interface. This is the interface with operations of
+/// EntityDataCOntext.
+/// For example: CustomersDataContext implements the ICustomersDataContext
+/// </summary>
+public class EntityDataContextInterfaceTemplate : Template
+{
+
+	/// <summary>
+	/// ModelType to generate operations for work with. 
+    /// Example: typeOf(Customer)
+	/// </summary>
+	public Type ModelType { get; set; }
+                                                                      
+    /// <summary>
+    /// Models namespace - Namespace to include for models
+    /// </summary>
+	public string ModelsNamespace { get; set; }
+	public string ModelTypeNamePlural { get; set; }
+
+    public string EntityDataContextInterfaceName { get; set; }																	
+	public string EntityDataContextsNamespace { get; set; }             
+
+
+	public override string TransformText()
+	{
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNamePluralLowerFirstLetter = modelTypeNamePlural.LowerFirstLetter();
+																																						  
+																			 
+		string dataContextsNamespace = EntityDataContextsNamespace;
+        string dataContextName = EntityDataContextInterfaceName;
+		string dataContextNameLowerFirstLetter = dataContextName.LowerFirstLetter();
+
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+		int propertiesCount = properties.Length;
+#>
+using System.Collections.Generic;
+using <#= modelsNamespace #>;
+
+namespace <#= dataContextsNamespace #>
+{
+	public interface <#=  dataContextName #>
+	{
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		void Insert<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>);
+
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		void Insert<#= modelTypeName #>AndSync(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>);
+
+		/// <summary>
+		/// Update <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		void Update<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>);
+
+		void InsertOrUpdate<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>);
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		void Delete<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>);
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from database by id
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>Id"></param>
+		void Delete<#= modelTypeName #>ById(int <#= modelTypeNameLowerFirstLetter #>Id);
+
+		/// <summary>
+		/// Returns all <#= modelTypeNamePluralLowerFirstLetter #> from the database
+		/// </summary>
+		/// <returns></returns>
+		IEnumerable<<#= modelTypeName #>> GetAll<#= modelTypeNamePlural #>();
+
+		/// <summary>
+		/// Returns single <#= modelTypeNameLowerFirstLetter #> from the database by id
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>Id"></param>
+		/// <returns><#= modelTypeName #></returns>
+		<#= modelTypeName #> Get<#= modelTypeName #>ById(int <#= modelTypeNameLowerFirstLetter #>Id);
+
+		/// <summary>
+		/// Creats the <#= modelTypeNamePlural #> table if not exists in the database
+		/// </summary>
+		void Create<#= modelTypeNamePlural #>TableIfNotExists();
+
+		/// <summary>
+		/// Drops the <#= modelTypeNamePluralLowerFirstLetter #> table if exists in the database
+		/// </summary>
+		void Drop<#= modelTypeNamePlural #>TableIfExists();
+	}
+}
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+}
+#>

@@ -1,0 +1,119 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+<#+
+// <copyright file="EntityViewModelTemplate.tt" company="Todor Mihailov">
+//  Copyright © Todor Miahilov. All Rights Reserved.
+// </copyright>
+
+public class EntityViewModelTemplate : Template
+{
+	public Type ModelType { get; set; }
+	public string ModelsNamespace { get; set; }         
+	public string ViewModelsNamespace { get; set; }             
+	public string ViewModelName { get; set; }                 
+				 
+	public override string TransformText()
+	{
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		string viewModelsNamespace = ViewModelsNamespace;
+		string viewModelName = ViewModelName;
+		string viewModelNameLowerFirstLetter = viewModelName.LowerFirstLetter();
+
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+		int propertiesCount = properties.Length;
+	 
+#>
+using GalaSoft.MvvmLight;
+using <#= modelsNamespace #>;
+
+namespace <#= viewModelsNamespace #>
+{
+	public class <#= viewModelName #> : ViewModelBase
+	{
+		public <#= viewModelName #>()
+		{
+		}
+
+		private <#= modelTypeName #> _<#= modelTypeNameLowerFirstLetter #>;
+		public <#= modelTypeName #> <#= modelTypeName #>
+		{
+			get
+			{
+				if (_<#= modelTypeNameLowerFirstLetter #> == null)
+				{
+					_<#= modelTypeNameLowerFirstLetter #> = new <#= modelTypeName #>();
+				}
+				return _<#= modelTypeNameLowerFirstLetter #>;
+			}
+			private set { _<#= modelTypeNameLowerFirstLetter #> = value; }
+		}
+
+		public <#= viewModelName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			this.<#= modelTypeName #> = <#= modelTypeNameLowerFirstLetter #>;
+		}
+
+<#+
+		WriteViewModelProperties(properties);		
+#>
+
+		public override void Cleanup()
+		{
+			base.Cleanup();
+		}
+	}
+}
+
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+
+	public void WriteViewModelProperties(System.Reflection.PropertyInfo[] properties)
+	{
+
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//class properties
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyType = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName[0].ToString().ToLower() + propertyName.Substring(1);
+
+#>
+		private const string <#= propertyName #>PropertyName = "<#= propertyName #>";
+		public string <#= propertyName #>
+		{
+			get
+			{
+				return _<#= modelTypeNameLowerFirstLetter #>.<#= propertyName #>;
+			}
+
+			set
+			{
+				if (_<#= modelTypeNameLowerFirstLetter #>.<#= propertyName #> == value)
+				{
+					return;
+				}
+				_<#= modelTypeNameLowerFirstLetter #>.<#= propertyName #> = value;
+				RaisePropertyChanged(<#= propertyName #>PropertyName);
+			}
+		}
+
+<#+                                                                                                                                                                                                                                                                                                                                                                  
+
+		}
+	}
+	
+		
+		
+
+}
+#>

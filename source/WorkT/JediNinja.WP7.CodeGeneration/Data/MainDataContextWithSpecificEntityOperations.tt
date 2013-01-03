@@ -1,0 +1,241 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+
+<#+
+// <copyright file="MainDataContextWithSpecificEntityOperations.tt.tt" company="Microsoft">
+//  Copyright © Microsoft. All Rights Reserved.
+// </copyright>
+
+/// <summary>
+/// Generates Main datacontext for work with SQLite and a specific Entity operations.
+/// MainDataContext will combine all EntitiesDataContexts into one like the DbContext in LINQ to SQL.
+/// It is a partial class as it will contain operations for all entities in the model
+/// </summary>
+public class MainDataContextWithSpecificEntityOperations : Template
+{
+
+	public string MainDataContextName { get; set; }                                                                      
+	public Type ModelType { get; set; }
+	public string ModelTypeKeyPropertyName { get; set; }
+	public string ModelsNamespace { get; set; }
+	public string ModelTypeNamePlural { get; set; } 
+	
+	public string EntityDataContextsNamespace { get; set; }             
+
+
+	public override string TransformText()
+	{
+		string mainDataContextName = MainDataContextName;
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+		string modelTypeNameUpperCase = modelTypeName.ToUpper();
+
+		string modelTypeKeyPropertyName = ModelTypeKeyPropertyName;
+		string modelTypeKeyPropertyNameLowerFirstLetter = modelTypeKeyPropertyName.LowerFirstLetter();
+																				
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNamePluralLowerFirstLetter = modelTypeNamePlural.LowerFirstLetter();
+																																						  
+																			 
+		string dataContextsNamespace = EntityDataContextsNamespace;
+		string dataContextInterfaceName = string.Format("I{0}DataContext", modelTypeName);
+		string dataContextName = string.Format("{0}DataContext", modelTypeName);
+		string dataContextNameLowerFirstLetter = dataContextName.LowerFirstLetter();
+
+		//System.Reflection.PropertyInfo keyProperty = ModelType.GetProperties().Where(p => p.Name == modelTypeKeyPropertyName).FirstOrDefault();
+		//System.Reflection.PropertyInfo[] properties = ModelType.GetProperties().Where(p => p.Name != modelTypeKeyPropertyName);
+
+
+		System.Reflection.PropertyInfo keyProperty = ModelType.GetProperty(modelTypeKeyPropertyName);
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+
+		//var propertiesList = properties.ToList();
+		//foreach (var property in propertiesList)
+		//{
+		//    if (property.Name == modelTypeKeyPropertyName)
+		//    {
+		//        properties = properties.ToList().Remove(property);
+		//    }
+		//}
+		//properties = properties.ToArray();                                                                            
+
+		
+		int propertiesCount = properties.Length;
+#>
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using <#= modelsNamespace #>;
+using SQLiteClient;
+
+namespace <#= dataContextsNamespace #>
+{
+	public partial class <#= mainDataContextName #> 
+	{
+		//TO DO: Uncomment these region with common datacontext operations in one of the datacontexts
+		#region Common DataContext
+		//private SQLiteConnection _db;
+		//private string _databaseFileName;
+		//private string DatabaseFileName
+		//{
+		//    get { return _databaseFileName; }
+		//    set { _databaseFileName = value; }
+		//}
+
+		//public <#= mainDataContextName #> ()
+		//{
+		//}
+
+		//public <#= mainDataContextName #> (string fileName)
+		//    : this()
+		//{
+		//    this._databaseFileName = fileName;
+		//
+		//    _db = new SQLiteConnection(fileName);
+		//
+		//    this.Open();
+		//    this.CreateTablesIfNotExist();
+		//}
+
+		//private void CreateTablesIfNotExist()
+		//{
+		//	//TO DO: Add table creation methods here
+		//    this.Create<#= modelTypeNamePlural #>TableIfNotExists();
+		//}
+
+		///// <summary>
+		///// Opens the database
+		///// </summary>
+		//public void Open()
+		//{
+		//    if (_db == null)
+		//    {
+		//        _db = new SQLiteConnection(DatabaseFileName);
+		//    }
+
+		//    try
+		//    {
+		//        _db.Open();
+		//    }
+		//    catch (SQLiteException ex)
+		//    {
+		//        throw ex;
+		//    }
+		//}
+		#endregion
+
+
+		#region <#= modelTypeNamePlural #> Operations
+		private <#= dataContextName #> _<#= dataContextNameLowerFirstLetter #>;
+		public <#= dataContextName #> <#= dataContextName #>
+		{
+			get
+			{
+				if (_<#= dataContextNameLowerFirstLetter #> == null)
+				{
+					_<#= dataContextNameLowerFirstLetter #> = new <#= dataContextName #>(_db);
+				}
+				return _<#= dataContextNameLowerFirstLetter #>;
+			}
+			set
+			{
+				_<#= dataContextNameLowerFirstLetter #> = value;
+			}
+		}
+
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Insert<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.Insert<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Insert<#= modelTypeName #>AndSync(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.Insert<#= modelTypeName #>AndSync(<#= modelTypeNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Update <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Update<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.Update<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+		}
+
+		public void InsertOrUpdate<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.InsertOrUpdate<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Delete<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.Delete<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from database by id
+		/// </summary>
+		/// <param name="<#= modelTypeKeyPropertyNameLowerFirstLetter #>"></param>
+		public void Delete<#= modelTypeName #>ById(int <#= modelTypeKeyPropertyNameLowerFirstLetter #>)
+		{
+			<#= dataContextName #>.Delete<#= modelTypeName #>ById(<#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Returns all <#= modelTypeNamePluralLowerFirstLetter #> from the database
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<<#= modelTypeName #>> GetAll<#= modelTypeNamePlural #>()
+		{
+			return <#= dataContextName #>.GetAll<#= modelTypeNamePlural #>();
+		}
+
+		/// <summary>
+		/// Returns single <#= modelTypeNameLowerFirstLetter #> from the database by id
+		/// </summary>
+		/// <param name="<#= modelTypeKeyPropertyNameLowerFirstLetter #>"></param>
+		/// <returns><#= modelTypeName #></returns>
+		public <#= modelTypeName #> Get<#= modelTypeName #>ById(int <#= modelTypeKeyPropertyNameLowerFirstLetter #>)
+		{
+			return <#= dataContextName #>.Get<#= modelTypeName #>ById(<#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Creates the <#= modelTypeNamePlural #> table if not exists in the database
+		/// </summary>
+		public void Create<#= modelTypeNamePlural #>TableIfNotExists()
+		{
+			<#= dataContextName #>.Create<#= modelTypeNamePlural #>TableIfNotExists();
+		}
+
+		/// <summary>
+		/// Drops the <#= modelTypeNamePluralLowerFirstLetter #> table if exists in the database
+		/// </summary>
+		public void Drop<#= modelTypeNamePlural #>TableIfExists()
+		{
+			<#= dataContextName #>.Drop<#= modelTypeNamePlural #>TableIfExists();
+		}
+		#endregion
+	}
+}
+
+
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+
+}
+#>

@@ -1,0 +1,28 @@
+<#@ template language="C#" hostspecific="True" debug="True" #>
+<#@ output extension="txt" #>
+<#@ include file="T4Toolbox.tt" #>
+<#@ Assembly Name="$(SolutionDir)\Libs\App.CodeGeneration.Model\WorkT.CodeGeneration.Model.dll" #>
+<#@ Import Namespace="WorkT.CodeGeneration.Model" #>
+<#@ Include File="DesignModelTemplate.tt" #>
+<#
+// <copyright file="DesignModelTemplateExecutor.tt" company="Jedi Ninja">
+//  Copyright © Todor Mihailov`. All Rights Reserved.
+// </copyright>
+	string designModelsNamespace = "WorkT.DesignModel";
+	string modelsNamespace = "WorkT.Model";
+	string outputProject = @"..\..\WorkT\WorkT.csproj"; 
+	string designModelsFolder = @"DesignModel";
+	string designModelsFileFormat = string.Format(@"{0}\{{0}}.g.cs", designModelsFolder);
+	   
+	DesignModelTemplate designModelTemplate = new DesignModelTemplate();
+	designModelTemplate.ModelType = typeof(Project);
+	designModelTemplate.ModelTypeNamePlural = "Projects";
+	designModelTemplate.ModelsNamespace = modelsNamespace;
+	designModelTemplate.DesignModelName = string.Format("Design{0}s", designModelTemplate.ModelType.Name);
+	designModelTemplate.DesignModelsNamespace = designModelsNamespace;
+
+	designModelTemplate.Output.File = string.Format(designModelsFileFormat, designModelTemplate.DesignModelName);
+	designModelTemplate.Output.Project = outputProject;
+	designModelTemplate.Render();
+	
+#>

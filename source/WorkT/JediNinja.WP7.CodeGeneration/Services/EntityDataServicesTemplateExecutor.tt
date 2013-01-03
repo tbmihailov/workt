@@ -1,0 +1,50 @@
+<#@ template language="C#" hostspecific="True" debug="True" #>
+<#@ output extension="txt" #>
+<#@ include file="T4Toolbox.tt" #>
+<#@ Assembly Name="$(SolutionDir)\Libs\App.CodeGeneration.Model\WorkT.CodeGeneration.Model.dll" #>
+<#@ Import Namespace="WorkT.CodeGeneration.Model" #>
+<#@ Include File="EntityDataServiceInterfaceTemplate.tt" #>
+<#@ Include File="EntityDataServiceTemplate.tt" #>
+<#
+// <copyright file="EntityDataServicesTemplateExecutor.tt" company="Jedi Ninja">
+//  Copyright © Todor Mihailov. All Rights Reserved.
+// </copyright>
+	string dataContextsNamespace = "WorkT.Data";
+	string modelsNamespace = "WorkT.Model";
+	string outputProject = @"..\..\WorkT\WorkT.csproj"; 
+	string dataContextsFolder = @"Data";
+	string dataContextsFileFormat = string.Format(@"{0}\{{0}}.g.cs", dataContextsFolder);
+
+    string servicesNamespace = "WorkT.Services";
+    string servicesFolder = @"Services";
+    string servicesFileFormat = string.Format(@"{0}\{{0}}.g.cs", servicesFolder);
+    string dataServiceName = string.Format("{{0}}DataService");
+    string dataServiceInterfaceName = string.Format("I{{0}}DataService");
+    
+	//EntityDataServiceInterface generation
+    EntityDataServiceInterfaceTemplate entityDataServiceInterface = new EntityDataServiceInterfaceTemplate();
+    entityDataServiceInterface.MainDataContextName = "WorkTrackerDataContext";
+    entityDataServiceInterface.ModelType = typeof(Project);
+    entityDataServiceInterface.ModelTypeKeyPropertyName = "ProjectId";
+    entityDataServiceInterface.ModelTypeNamePlural = "Projects";
+    entityDataServiceInterface.ModelsNamespace = modelsNamespace;
+    entityDataServiceInterface.EntityDataContextsNamespace = dataContextsNamespace;
+    entityDataServiceInterface.ServicesNamespace = servicesNamespace;
+    entityDataServiceInterface.Output.File = string.Format(servicesFileFormat, string.Format(dataServiceInterfaceName, entityDataServiceInterface.ModelTypeNamePlural));
+    entityDataServiceInterface.Output.Project = outputProject;
+    entityDataServiceInterface.Render();
+
+    //EntityDataService generation
+    EntityDataServiceTemplate entityDataService = new EntityDataServiceTemplate();
+    entityDataService.MainDataContextName = "WorkTrackerDataContext";
+    entityDataService.ModelType = typeof(Project);
+    entityDataService.ModelTypeKeyPropertyName = "ProjectId";
+    entityDataService.ModelTypeNamePlural = "Projects";
+    entityDataService.ModelsNamespace = modelsNamespace;
+    entityDataService.EntityDataContextsNamespace = dataContextsNamespace;
+    entityDataService.ServicesNamespace = servicesNamespace;
+    entityDataService.Output.File = string.Format(servicesFileFormat, string.Format(dataServiceName, entityDataService.ModelTypeNamePlural));
+    entityDataService.Output.Project = outputProject;
+    entityDataService.Render();
+	
+#>

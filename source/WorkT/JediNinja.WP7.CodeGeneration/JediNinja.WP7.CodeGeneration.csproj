@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.20506</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EC9B6202-241F-4463-B3D8-38097173A359}</ProjectGuid>
+    <ProjectTypeGuids>{C089C8C0-30E0-4E22-80C0-CE093F111A43};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>JediNinja.WP7.CodeGeneration</RootNamespace>
+    <AssemblyName>JediNinja.WP7.CodeGeneration</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
+    <TargetFrameworkProfile>WindowsPhone71</TargetFrameworkProfile>
+    <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+    <SilverlightApplication>false</SilverlightApplication>
+    <ValidateXaml>true</ValidateXaml>
+    <ThrowErrorsInValidation>true</ThrowErrorsInValidation>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;TRACE;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>TRACE;SILVERLIGHT;WINDOWS_PHONE</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="JediNinja.WP7.CodeGeneration.Utils">
+      <HintPath>..\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Windows" />
+    <Reference Include="system" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Net" />
+    <Reference Include="WorkT.CodeGeneration.Model">
+      <HintPath>..\Libs\App.CodeGeneration.Model\WorkT.CodeGeneration.Model.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DesignModel\DesignModelTemplateExecutor.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DesignModelTemplateExecutor.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Templates\SimpleDTOTemplateExecutor.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SimpleDTOTemplateExecutor.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\MainDataContextWithSpecificEntityOperations.tt" />
+    <None Include="Data\EntityDataContextTemplatesExecutor.tt.log">
+      <DependentUpon>EntityDataContextTemplatesExecutor.tt</DependentUpon>
+    </None>
+    <None Include="DesignModel\DesignModelTemplate.tt" />
+    <Compile Include="DesignModel\DesignModelTemplateExecutor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DesignModelTemplateExecutor.cs</LastGenOutput>
+    </Compile>
+    <None Include="Data\EntityDataContextInterfaceTemplate.tt" />
+    <None Include="Data\EntityDataContextTemplate.tt" />
+    <None Include="Data\EntityDataContextTemplatesExecutor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>EntityDataContextTemplatesExecutor.txt</LastGenOutput>
+    </None>
+    <None Include="Services\EntityDataServiceInterfaceTemplate.tt" />
+    <None Include="Services\EntityDataServicesTemplateExecutor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>EntityDataServicesTemplateExecutor.txt</LastGenOutput>
+    </None>
+    <None Include="ViewModels\EntityViewModelTemplate.tt" />
+    <None Include="DesignModel\DesignModelTemplateExecutor.tt.log">
+      <DependentUpon>DesignModelTemplateExecutor.tt</DependentUpon>
+    </None>
+    <None Include="ViewModels\EntityViewModelTemplateExecutor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>EntityViewModelTemplateExecutor.txt</LastGenOutput>
+    </None>
+    <None Include="Services\EntityDataServicesTemplateExecutor.tt.log">
+      <DependentUpon>EntityDataServicesTemplateExecutor.tt</DependentUpon>
+    </None>
+    <None Include="Services\EntityDataServiceTemplate.tt" />
+    <None Include="Templates\SimpleDTOTemplate.tt" />
+    <None Include="Templates\SimpleDTOTemplateExecutor.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SimpleDTOTemplateExecutor.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\EntityDataContextTemplatesExecutor.txt">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntityDataContextTemplatesExecutor.tt</DependentUpon>
+    </Content>
+    <Content Include="Services\EntityDataServicesTemplateExecutor.txt">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntityDataServicesTemplateExecutor.tt</DependentUpon>
+    </Content>
+    <Content Include="ViewModels\EntityViewModelTemplateExecutor.txt">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>EntityViewModelTemplateExecutor.tt</DependentUpon>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />
+  <ProjectExtensions />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

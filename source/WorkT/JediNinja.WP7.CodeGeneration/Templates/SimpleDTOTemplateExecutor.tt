@@ -1,0 +1,23 @@
+<#@ template language="C#" hostspecific="True" debug="True" #>
+<#@ output extension="txt" #>
+<#@ include file="T4Toolbox.tt" #>
+<#@ include file="SimpleDTOTemplate.tt" #>
+
+<#@ import Namespace="JediNinja.WP7.CodeGeneration" #>
+<#
+//<#@ Assembly Name="$(ProjectDir)\Libs\AcsControl.Data.dll" #>
+	// <copyright file="SimpleDTOTemplateExecutor.tt" company="Acstre">
+	//  Copyright © Todor Mihailov - Acstre. All Rights Reserved.
+	// </copyright>
+
+	//SimpleDTOTemplate template = new SimpleDTOTemplate();
+	//template.TypeToConvert = typeof(ModuleCheck);
+	//template.DtoTypeName = "ModuleCheckDTO";
+	//template.DtoTypeNamespace = "AcsControl.Data.ModelDTO";
+	//template.Output.File = string.Format(@"ModelDTO\{0}.g.cs", template.DtoTypeName);
+	//template.Output.Project = @"..\..\AcsControl.Data\AcsControl.Data.csproj";
+	
+	//template.Render();
+
+
+#>

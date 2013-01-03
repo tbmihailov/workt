@@ -1,0 +1,27 @@
+<#@ template language="C#" hostspecific="True" debug="True" #>
+<#@ output extension="txt" #>
+<#@ include file="T4Toolbox.tt" #>
+<#@ Assembly Name="$(SolutionDir)\Libs\App.CodeGeneration.Model\WorkT.CodeGeneration.Model.dll" #>
+<#@ Import Namespace="WorkT.CodeGeneration.Model" #>
+<#@ Include File="EntityViewModelTemplate.tt" #>
+<#
+// <copyright file="EntityViewModelTemplateExecutor.tt" company="Jedi Ninja">
+//  Copyright © Todor Mihailov`. All Rights Reserved.
+// </copyright>
+	string viewModelsNamespace = "WorkT.ViewModels";
+	string modelsNamespace = "WorkT.Models";
+	string outputProject = @"..\..\AcsControl.Data\AcsControl.Data.csproj"; 
+	string viewModelsFolder = @"\Model";
+	string viewModelsFileFormat = string.Format(@"{0}\{{1}}.g.cs", viewModelsFolder);
+	
+	EntityViewModelTemplate entityViewModelTemplate = new EntityViewModelTemplate();
+	entityViewModelTemplate.ModelType = typeof(Project);
+	entityViewModelTemplate.ModelsNamespace = modelsNamespace;
+	entityViewModelTemplate.ViewModelName = string.Format("{0}ViewModel", entityViewModelTemplate.ModelType.Name);
+	entityViewModelTemplate.ViewModelsNamespace = viewModelsNamespace;
+
+	//entityViewModelTemplate.Output.File = string.Format(viewModelsFileFormat, entityViewModelTemplate.ViewModelName);
+	//entityViewModelTemplate.Output.Project = outputProject;
+	entityViewModelTemplate.Render();
+	
+#>

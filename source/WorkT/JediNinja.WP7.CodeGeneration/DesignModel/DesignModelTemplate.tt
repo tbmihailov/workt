@@ -1,0 +1,128 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+<#+
+// <copyright file="DesignModelTemplate.tt" company="Microsoft">
+//  Copyright © Microsoft. All Rights Reserved.
+// </copyright>
+
+public class DesignModelTemplate : Template
+{
+	public Type ModelType { get; set; }
+	public string ModelsNamespace { get; set; }
+	public string ModelTypeNamePlural { get; set; }                                                             
+	
+	public string DesignModelsNamespace { get; set; }             
+	public string DesignModelName { get; set; }                 
+				 
+	public override string TransformText()
+	{
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNamePluralLowerFirstLetter = modelTypeNamePlural.LowerFirstLetter();
+																																						  
+																			 
+		string designModelsNamespace = DesignModelsNamespace;
+		string designModelName = DesignModelName;
+		string designModelNameLowerFirstLetter = designModelName.LowerFirstLetter();
+
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+		int propertiesCount = properties.Length;
+	 
+#>
+using System.Collections.ObjectModel;
+using <#= modelsNamespace #>;
+using System.Collections.Generic;
+
+namespace <#= designModelsNamespace #>
+{
+	public class <#= designModelName #> : ObservableCollection<<#= modelTypeName #>>
+	{
+
+		public <#= designModelName #>()
+			: this(50)
+		{
+
+		}
+
+		public <#= designModelName #>(int count)
+		{
+			var <#= modelTypeNamePluralLowerFirstLetter #> = Generate<#= modelTypeNamePlural #>(count);
+			foreach (<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #> in <#= modelTypeNamePluralLowerFirstLetter #>)
+			{
+				this.Add(<#= modelTypeNameLowerFirstLetter #>);
+			}
+
+		}
+
+		private static IEnumerable<<#= modelTypeName #>> Generate<#= modelTypeNamePlural #>(int count)
+		{
+			var <#= modelTypeNamePluralLowerFirstLetter #> = new List<<#= modelTypeName #>>();
+			for (int i = 0; i < count; i++)
+			{
+				//TODO: Consider design assignments
+				var new<#= modelTypeName #> = new <#= modelTypeName #>()
+				{
+<#+
+					WriteDesignModelPropertiesAssignments(properties);
+#>
+				};
+				<#= modelTypeNamePluralLowerFirstLetter #>.Add(new<#= modelTypeName #>);
+			}
+
+			return <#= modelTypeNamePluralLowerFirstLetter #>;
+		}
+	}
+}
+
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+
+	public void WriteDesignModelPropertiesAssignments(System.Reflection.PropertyInfo[] properties)
+	{
+
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//set constructor parameters	
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyType = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName.LowerFirstLetter();
+			string paramDelimiter = ",";
+			if (i >= propertiesCount - 1)
+			{
+				paramDelimiter = string.Empty;
+			}
+
+			if (property.PropertyType == typeof(int))
+			{
+				WriteLine("\t\t\t\t\t{0} = {1} {2}", propertyName, "i", paramDelimiter);
+			}
+			else if (property.PropertyType == typeof(string))
+			{
+			   WriteLine("\t\t\t\t\t{0} = \"{0} {1}\" {2}", propertyName, "i", paramDelimiter);
+			}
+			else if (property.PropertyType == typeof(DateTime))
+			{
+			   WriteLine("\t\t\t\t\t{0} = \"{0} {1}\" {2}", propertyName, "DateTime.Now.Add(i)", paramDelimiter);
+			}
+			else
+			{
+			   WriteLine("\t\t\t\t\t{0} = {1} {2}", propertyName, "null", paramDelimiter);
+			}
+		}
+	}
+	
+		
+		
+
+}
+#>

@@ -1,0 +1,268 @@
+﻿<#+
+	  
+	// <copyright file="SimpleDTOTemplate.tt" company="Acstre">
+	//  Copyright © Todor Mihailov - Acstre. All Rights Reserved.
+	// </copyright>
+
+	/// <summary>
+	/// Generates simple new DTO class from a Model class that contains only properties
+	/// </summary>
+	public class SimpleDTOTemplate : Template
+	{
+	   public Type TypeToConvert { get; set; }
+	   public string DtoTypeName { get; set; }
+	   public string DtoTypeNamespace { get; set; }
+
+	   public SimpleDTOTemplate()
+	   {
+	  }
+
+	   public SimpleDTOTemplate(Type typeToConvert, string dtoTypeName, string dtoTypeNamespace)
+	   {
+		  this.TypeToConvert = typeToConvert;
+		  this.DtoTypeName = dtoTypeName;
+		  this.DtoTypeNamespace = dtoTypeNamespace;
+   }
+
+	   public override string TransformText()
+	   {
+		  string typeToConvertName = TypeToConvert.Name;
+		  string typeToConvertFullName = TypeToConvert.FullName;																							
+		  string typeToConvertNameLowerFirstLetter = typeToConvertName[0].ToString().ToLower() + typeToConvertName.Substring(1);
+
+		  string dtoTypeNamespace = DtoTypeNamespace;
+		  string dtoTypeName = DtoTypeName;
+		  string dtoTypeFullName = string.Format("{0}.{1}", dtoTypeNamespace, dtoTypeName);
+		  string dtoTypeNameLowerFirstLetter = dtoTypeName[0].ToString().ToLower() + dtoTypeName.Substring(1);
+																						  
+		  System.Reflection.PropertyInfo[] properties = TypeToConvert.GetProperties();
+		  int propertiesCount = properties.Length;
+																				   
+#>
+//<#= dtoTypeName #>.cs
+using System;
+
+namespace <#= dtoTypeNamespace #>
+{
+	public class <#= dtoTypeName #>
+	{
+
+		public <#= dtoTypeName #>(
+<#+
+		  WriteConstructorFieldsParameters(properties);
+#>
+								   )
+		{
+<#+
+		  WriteAssignmentsInConstructorWithFieldsParameters(properties);
+#>
+		}
+
+		public <#= dtoTypeName #>()
+		{
+		}
+
+		/// <summary>
+		///Creates new <#= dtoTypeFullName #> from <#= typeToConvertFullName #>
+		///</summary>
+		public <#= dtoTypeName #>(<#= typeToConvertFullName #> <#= typeToConvertNameLowerFirstLetter #>)
+		{
+<#+
+		  WriteAssignmentsInConstructorWithEntityParameter(properties);
+#>			
+		}
+
+		#region Object <-> Dto object conversions
+		public static <#= dtoTypeFullName #> Create<#= dtoTypeName #>From<#= typeToConvertName #>(<#= typeToConvertFullName #> <#= typeToConvertNameLowerFirstLetter #>)
+		{
+			if(<#= typeToConvertNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= typeToConvertNameLowerFirstLetter #> must not be null!");
+			}
+
+			var <#= dtoTypeNameLowerFirstLetter #> = new <#= dtoTypeFullName #>();
+<#+
+		   WritePropertyAssignmentsFromEntityParameter(dtoTypeNameLowerFirstLetter, properties);
+#>		  	
+			return <#= dtoTypeNameLowerFirstLetter #>;
+		}
+
+		public static <#= typeToConvertFullName #> Create<#= typeToConvertName #>From<#= dtoTypeName #>(<#= dtoTypeFullName #> <#= dtoTypeNameLowerFirstLetter #>)
+		{
+			if(<#= dtoTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= dtoTypeNameLowerFirstLetter #> must not be null!");
+			}
+
+			var <#= typeToConvertNameLowerFirstLetter #> = new <#= typeToConvertFullName #>();
+<#+
+		   WritePropertyAssignmentsFromEntityParameter(typeToConvertNameLowerFirstLetter, properties);
+#>		  	
+			return <#= typeToConvertNameLowerFirstLetter #>;
+		}
+		#endregion
+
+<#+
+		  WriteClassProperties(properties);
+#>
+
+	}
+}
+<#+       return this.GenerationEnvironment.ToString();
+}
+
+	   public void WriteConstructorFieldsParameters(System.Reflection.PropertyInfo[] properties)
+	   {
+		  string typeToConvertName = TypeToConvert.Name;
+		  string typeToConvertNameLowerFirstLetter = typeToConvertName[0].ToString().ToLower() + typeToConvertName.Substring(1);
+
+		  int propertiesCount = properties.Length;
+		  //set constructor parameters	
+		  for (int i = 0; i < propertiesCount; i++)
+		  {
+			 var property = properties[i];
+			 string propertyType = GetTypeFriendlyName(property.PropertyType);
+			 string propertyName = property.Name;
+			 string propertyNameLowerCase = propertyName[0].ToString().ToLower() + propertyName.Substring(1);
+			 string paramDelimiter = ",";
+			 if (i >= propertiesCount - 1)
+			 {
+				paramDelimiter = string.Empty;
+		   }
+			
+#>
+							<#= propertyType #> <#= propertyNameLowerCase #> <#= paramDelimiter #>
+<#+
+			
+			}
+		}
+
+	   public void WriteAssignmentsInConstructorWithEntityParameter(System.Reflection.PropertyInfo[] properties)
+	   {
+			string targetVariableName = "this";
+			WritePropertyAssignmentsFromEntityParameter(targetVariableName, properties);
+	   }
+	   
+	   public void WritePropertyAssignmentsFromEntityParameter(string targetVariableName, System.Reflection.PropertyInfo[] properties)
+	   {
+		  string typeToConvertName = TypeToConvert.Name;
+		  string typeToConvertNameLowerFirstLetter = typeToConvertName[0].ToString().ToLower() + typeToConvertName.Substring(1);
+
+		  int propertiesCount = properties.Length;
+
+		  for (int i = 0; i < propertiesCount; i++)
+		  {
+			 var property = properties[i];
+			 string propertyType = GetTypeFriendlyName(property.PropertyType);
+			 string propertyName = property.Name;
+			 string propertyNameLowerCase = propertyName[0].ToString().ToLower() + propertyName.Substring(1);
+#>
+			<#= targetVariableName #>.<#= propertyName #> = <#= typeToConvertNameLowerFirstLetter #>.<#= propertyName #> ;
+<#+
+			
+}
+}
+
+	   public void WriteAssignmentsInConstructorWithFieldsParameters(System.Reflection.PropertyInfo[] properties)
+	   {
+		  string typeToConvertName = TypeToConvert.Name;
+		  string typeToConvertNameLowerFirstLetter = typeToConvertName[0].ToString().ToLower() + typeToConvertName.Substring(1);
+
+		  int propertiesCount = properties.Length;
+		  //set assignments in constructor
+		  for (int i = 0; i < propertiesCount; i++)
+		  {
+			 var property = properties[i];
+			 string propertyType = property.PropertyType.Name;
+			 string propertyName = property.Name;
+			 string propertyNameLowerCase = propertyName[0].ToString().ToLower() + propertyName.Substring(1);
+#>
+			this.<#= propertyName #> = <#= propertyNameLowerCase #> ;
+<#+
+			
+}
+}
+
+
+	   public void WriteClassProperties(System.Reflection.PropertyInfo[] properties)
+	   {
+		  string typeToConvertName = TypeToConvert.Name;
+		  string typeToConvertNameLowerFirstLetter = typeToConvertName[0].ToString().ToLower() + typeToConvertName.Substring(1);
+
+		  int propertiesCount = properties.Length;
+		  //class properties
+		  for (int i = 0; i < propertiesCount; i++)
+		  {
+			 var property = properties[i];
+			 string propertyType = GetTypeFriendlyName(property.PropertyType);
+			 string propertyName = property.Name;
+			 string propertyNameLowerCase = propertyName[0].ToString().ToLower() + propertyName.Substring(1);
+
+			 if (property.PropertyType.IsValueType || property.PropertyType.Equals(typeof(string)))
+			 { 
+#>
+		public <#= propertyType #> <#= propertyName#> { get; set; }
+<#+
+}
+			 else
+			 { 
+#>
+		private <#= propertyType #> _<#= propertyNameLowerCase #>;
+		public <#= propertyType #> <#= propertyName#> 
+		{ 
+			get
+			{
+				return _<#= propertyNameLowerCase #>;
+			} 
+			set
+			{
+				_<#= propertyNameLowerCase #> = value;
+			}
+		}
+<#+                                                                                                                                                                                                                                                                                                                                                                  
+			}
+		}
+	  }
+
+	   private static string GetTypeFriendlyName(Type type)
+		{
+			if (type.IsGenericParameter)
+			{
+				return type.Name;
+			}
+
+			if (!type.IsGenericType)
+			{
+				return type.Name;
+			}
+
+			int arityIndex = type.Name.IndexOf('`');
+			string genericTypeName = type.Name.Substring(0, arityIndex);
+
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			sb.Append(genericTypeName);
+			sb.Append("<");
+			bool isFirstArgument = true;
+			foreach (var argument in type.GetGenericArguments())
+			{
+				if (!isFirstArgument)
+				{
+					sb.Append(", ");
+				}
+				else
+				{
+					isFirstArgument = false;
+				}
+
+				sb.Append(GetTypeFriendlyName(argument));
+			}
+			sb.Append(">");
+
+			string typeName = sb.ToString();
+			
+			return typeName;
+		}
+}
+#>
+
+

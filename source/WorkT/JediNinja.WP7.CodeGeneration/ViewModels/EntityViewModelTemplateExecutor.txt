@@ -1,0 +1,115 @@
+
+using GalaSoft.MvvmLight;
+using WorkT.Models;
+
+namespace WorkT.ViewModels
+{
+	public class ProjectViewModel : ViewModelBase
+	{
+		public ProjectViewModel()
+		{
+		}
+
+		private Project _project;
+		public Project Project
+		{
+			get
+			{
+				if (_project == null)
+				{
+					_project = new Project();
+				}
+				return _project;
+			}
+			private set { _project = value; }
+		}
+
+		public ProjectViewModel(Project project)
+		{
+			this.Project = project;
+		}
+
+		private const string ProjectIdPropertyName = "ProjectId";
+		public string ProjectId
+		{
+			get
+			{
+				return _project.ProjectId;
+			}
+
+			set
+			{
+				if (_project.ProjectId == value)
+				{
+					return;
+				}
+				_project.ProjectId = value;
+				RaisePropertyChanged(ProjectIdPropertyName);
+			}
+		}
+
+		private const string GroupIdPropertyName = "GroupId";
+		public string GroupId
+		{
+			get
+			{
+				return _project.GroupId;
+			}
+
+			set
+			{
+				if (_project.GroupId == value)
+				{
+					return;
+				}
+				_project.GroupId = value;
+				RaisePropertyChanged(GroupIdPropertyName);
+			}
+		}
+
+		private const string NamePropertyName = "Name";
+		public string Name
+		{
+			get
+			{
+				return _project.Name;
+			}
+
+			set
+			{
+				if (_project.Name == value)
+				{
+					return;
+				}
+				_project.Name = value;
+				RaisePropertyChanged(NamePropertyName);
+			}
+		}
+
+		private const string DescriptionPropertyName = "Description";
+		public string Description
+		{
+			get
+			{
+				return _project.Description;
+			}
+
+			set
+			{
+				if (_project.Description == value)
+				{
+					return;
+				}
+				_project.Description = value;
+				RaisePropertyChanged(DescriptionPropertyName);
+			}
+		}
+
+
+		public override void Cleanup()
+		{
+			base.Cleanup();
+		}
+	}
+}
+

@@ -1,0 +1,604 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+
+<#+
+// <copyright file="EntityDataContextTemplate.tt" company="Microsoft">
+//  Copyright © Microsoft. All Rights Reserved.
+// </copyright>
+
+
+/// <summary>
+/// Generates EntityDataContext . This is the context with operations for a specific entity
+/// For example: CustomersDataContext implements the ICustomersDataContext
+/// </summary>
+public class EntityDataContextTemplate : Template
+{
+	/// <summary>
+	/// ModelType to generate operations for work with. 
+	/// Example: typeOf(Customer)
+	/// </summary>
+	public Type ModelType { get; set; }
+	public string ModelTypeKeyPropertyName { get; set; }
+	public string ModelsNamespace { get; set; }
+	public string ModelTypeNamePlural { get; set; }
+
+	public string EntityDataContextName { get; set; }                                                                  
+	public string EntityDataContextsNamespace { get; set; }             
+
+	public override string TransformText()
+	{
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+		string modelTypeNameUpperCase = modelTypeName.ToUpper();
+
+		string modelTypeKeyPropertyName = ModelTypeKeyPropertyName;
+		string modelTypeKeyPropertyNameLowerFirstLetter = modelTypeKeyPropertyName.LowerFirstLetter();
+																				
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNamePluralLowerFirstLetter = modelTypeNamePlural.LowerFirstLetter();
+																																						  
+																			 
+		string dataContextsNamespace = EntityDataContextsNamespace;
+		string dataContextName = EntityDataContextName;
+		string dataContextInterfaceName = string.Format("I{0}", dataContextName);
+		string dataContextNameLowerFirstLetter = dataContextName.LowerFirstLetter();
+
+		//System.Reflection.PropertyInfo keyProperty = ModelType.GetProperties().Where(p => p.Name == modelTypeKeyPropertyName).FirstOrDefault();
+		//System.Reflection.PropertyInfo[] properties = ModelType.GetProperties().Where(p => p.Name != modelTypeKeyPropertyName);
+
+
+		System.Reflection.PropertyInfo keyProperty = ModelType.GetProperty(modelTypeKeyPropertyName);
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+
+		//var propertiesList = properties.ToList();
+		//foreach (var property in propertiesList)
+		//{
+		//    if (property.Name == modelTypeKeyPropertyName)
+		//    {
+		//        properties = properties.ToList().Remove(property);
+		//    }
+		//}
+		//properties = properties.ToArray();                                                                            
+
+		
+		int propertiesCount = properties.Length;
+#>
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using <#= modelsNamespace #>;
+using SQLiteClient;
+
+namespace <#= dataContextsNamespace #>
+{
+	public class <#= dataContextName #> : <#= dataContextInterfaceName #>
+	{
+
+		public <#= dataContextName #>() { }
+
+		private const string SQL_<#= modelTypeNameUpperCase #>_DELETE_BY_ID = "DELETE FROM <#= modelTypeNamePlural #> where <#= modelTypeKeyPropertyName #> = ?";
+		//private const string SQL_<#= modelTypeNameUpperCase #>_INSERT = "INSERT INTO <#= modelTypeNamePlural #>(Name, Description) VALUES(?,?)";
+		private const string SQL_<#= modelTypeNameUpperCase #>_INSERT = "<#+
+		WriteInsertSql(properties);
+#>";
+		private const string SQL_SELECT_LAST_INSERT_ID = "SELECT last_insert_rowid() as Id";
+		//private const string SQL_<#= modelTypeNameUpperCase #>_UPDATE = "UPDATE <#= modelTypeNamePlural #> SET " +
+		//											  "Name = ?," +
+		//											  "Description=?" +
+		//											  "where <#= modelTypeKeyPropertyName #>=?";
+		private const string SQL_<#= modelTypeNameUpperCase #>_UPDATE = 
+			@"<#+
+		WriteUpdateSql(properties);
+#>";
+		private const string SQL_<#= modelTypeNameUpperCase #>_SELECT_ALL = "SELECT * FROM <#= modelTypeNamePlural #>";
+		private const string SQL_<#= modelTypeNameUpperCase #>_SELECT_BY_ID = "SELECT * FROM <#= modelTypeNamePlural #> where <#= modelTypeKeyPropertyName #> = ?";
+		
+		//private const string SQL_<#= modelTypeNameUpperCase #>_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS <#= modelTypeNamePlural #> " +
+		//												//TODO: Fix table column types
+		//												"(" +
+		//													"<#= modelTypeKeyPropertyName #> INTEGER PRIMARY KEY  NOT NULL ," +
+		//													"Name VARCHAR(32)," +
+		//													"Description varchar(160)" +
+		//												 ")";
+		//TO DO: Check Create table script fields <#= modelTypeNamePlural #>
+		private const string SQL_<#= modelTypeNameUpperCase #>_TABLE_CREATE =
+			@"
+			<#+
+		WriteCreateTableSql(properties);
+#>";
+
+		private const string SQL_<#= modelTypeNameUpperCase #>_TABLE_DROP = "DROP TABLE IF EXISTS <#= modelTypeNamePlural #>";
+	
+		public <#= dataContextName #>(SQLiteConnection sqlConnection)
+			: base()
+		{
+			this.db = sqlConnection;
+		}
+
+		private SQLiteConnection db;
+
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Insert<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			var currentDatabase = db;
+
+			if (<#= modelTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null");
+			}
+
+			if (currentDatabase == null)
+			{
+				return;
+			}
+			try
+			{
+				
+				currentDatabase.BeginTransaction();
+				SQLiteCommand cmd = currentDatabase.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_INSERT,
+													 <#= modelTypeNameLowerFirstLetter #>.Name, <#= modelTypeNameLowerFirstLetter #>.Description);
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				currentDatabase.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (currentDatabase.TransactionOpened)
+					currentDatabase.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Inserts a <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Insert<#= modelTypeName #>AndSync(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			var currentDatabase = db;
+
+			if (<#= modelTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null");
+			}
+
+			if (currentDatabase == null)
+			{
+				return;
+			}
+			try
+			{
+				
+				currentDatabase.BeginTransaction();
+				//save new <#= modelTypeNameLowerFirstLetter #>
+				SQLiteCommand cmd = currentDatabase.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_INSERT,
+													 <#= modelTypeNameLowerFirstLetter #>.Name, 
+													 <#= modelTypeNameLowerFirstLetter #>.Description
+													 );
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				
+				//load new inserted <#= modelTypeNameLowerFirstLetter #>
+				SQLiteCommand cmdLoad = currentDatabase.CreateCommand(SQL_SELECT_LAST_INSERT_ID);
+				var lastRowIdResult = cmdLoad.ExecuteQuery<ScalarIdColumn>();
+				var lastRowId = lastRowIdResult.FirstOrDefault();
+
+				int lastId = lastRowId.Id;
+
+				//set new values
+				<#= modelTypeNameLowerFirstLetter #>.<#= modelTypeKeyPropertyName #> = lastId;
+				currentDatabase.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (currentDatabase.TransactionOpened)
+					currentDatabase.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Update <#= modelTypeNameLowerFirstLetter #> in the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Update<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			if (<#= modelTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null");
+			}
+
+			if (db == null)
+			{
+				return;
+			}
+			try
+			{
+				db.BeginTransaction();
+				SQLiteCommand cmd = db.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_UPDATE,
+													  <#= modelTypeNameLowerFirstLetter #>.Name,
+													  <#= modelTypeNameLowerFirstLetter #>.Description,
+													  <#= modelTypeNameLowerFirstLetter #>.<#= modelTypeKeyPropertyName #>);
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				db.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (db.TransactionOpened)
+					db.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+		public void InsertOrUpdate<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			if (<#= modelTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null");
+			}
+
+			int <#= modelTypeKeyPropertyNameLowerFirstLetter #> = <#= modelTypeNameLowerFirstLetter #>.<#= modelTypeKeyPropertyName #>;
+			if (<#= modelTypeKeyPropertyNameLowerFirstLetter #> == 0)
+			{
+				this.Insert<#= modelTypeName #>AndSync(<#= modelTypeNameLowerFirstLetter #>);
+			}
+			else
+			{
+				this.Update<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+			}
+		}
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from the database
+		/// </summary>
+		/// <param name="<#= modelTypeNameLowerFirstLetter #>"></param>
+		public void Delete<#= modelTypeName #>(<#= modelTypeName #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			if (<#= modelTypeNameLowerFirstLetter #> == null)
+			{
+				throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null");
+			}
+
+			int <#= modelTypeKeyPropertyNameLowerFirstLetter #> = <#= modelTypeNameLowerFirstLetter #>.<#= modelTypeKeyPropertyName #>;
+
+			this.Delete<#= modelTypeName #>ById(<#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+		}
+
+		/// <summary>
+		/// Delete <#= modelTypeNameLowerFirstLetter #> from database by id
+		/// </summary>
+		/// <param name="<#= modelTypeKeyPropertyNameLowerFirstLetter #>"></param>
+		public void Delete<#= modelTypeName #>ById(int <#= modelTypeKeyPropertyNameLowerFirstLetter #>)
+		{
+			if (db == null)
+			{
+				return;
+			}
+			try
+			{
+				db.BeginTransaction();
+				SQLiteCommand cmd = db.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_DELETE_BY_ID,
+													  <#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				db.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (db.TransactionOpened)
+					db.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Returns all <#= modelTypeNamePluralLowerFirstLetter #> from the database
+		/// </summary>
+		/// <returns></returns>
+		public IEnumerable<<#= modelTypeName #>> GetAll<#= modelTypeNamePlural #>()
+		{
+			if (db == null)
+			{
+				return null;
+			}
+
+			try
+			{
+				SQLiteCommand cmd = db.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_SELECT_ALL);
+				var <#= modelTypeNamePluralLowerFirstLetter #> = cmd.ExecuteQuery<<#= modelTypeName #>>();
+				return <#= modelTypeNamePluralLowerFirstLetter #>;
+			}
+			catch (SQLiteException ex)
+			{
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Returns single <#= modelTypeNameLowerFirstLetter #> from the database by id
+		/// </summary>
+		/// <param name="<#= modelTypeKeyPropertyNameLowerFirstLetter #>"></param>
+		/// <returns><#= modelTypeName #></returns>
+		public <#= modelTypeName #> Get<#= modelTypeName #>ById(int <#= modelTypeKeyPropertyNameLowerFirstLetter #>)
+		{
+			if (db == null)
+			{
+				return null;
+			}
+
+			try
+			{
+				SQLiteCommand cmd = db.CreateCommand(SQL_<#= modelTypeNameUpperCase #>_SELECT_BY_ID,
+														<#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+				var <#= modelTypeNamePluralLowerFirstLetter #> = cmd.ExecuteQuery<<#= modelTypeName #>>();
+				var <#= modelTypeNameLowerFirstLetter #> = <#= modelTypeNamePluralLowerFirstLetter #>.FirstOrDefault();
+				return <#= modelTypeNameLowerFirstLetter #>;
+			}
+			catch (SQLiteException ex)
+			{
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Creats the <#= modelTypeNamePlural #> table if not exists in the database
+		/// </summary>
+		public void Create<#= modelTypeNamePlural #>TableIfNotExists()
+		{
+			if (db == null)
+			{
+				return;
+			}
+			try
+			{
+				db.BeginTransaction();
+				SQLiteCommand cmd = db.CreateCommand(
+							SQL_<#= modelTypeNameUpperCase #>_TABLE_CREATE);
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				db.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (db.TransactionOpened)
+					db.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+		/// <summary>
+		/// Drops the <#= modelTypeNamePluralLowerFirstLetter #> table if exists in the database
+		/// </summary>
+		public void Drop<#= modelTypeNamePlural #>TableIfExists()
+		{
+			if (db == null)
+			{
+				return;
+			}
+			try
+			{
+				db.BeginTransaction();
+				SQLiteCommand cmd = db.CreateCommand(
+							SQL_<#= modelTypeNameUpperCase #>_TABLE_DROP);
+				int numberOfRowsAffected = cmd.ExecuteNonQuery();
+				db.CommitTransaction();
+			}
+			catch (SQLiteException ex)
+			{
+				if (db.TransactionOpened)
+					db.RollbackTransaction();
+				throw ex;
+			}
+		}
+
+	}
+}
+
+
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+	
+	public void WriteDesignModelPropertiesAssignments(System.Reflection.PropertyInfo[] properties)
+	{
+
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//set constructor parameters	
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyType = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName.LowerFirstLetter();
+			string paramDelimiter = ",";
+			if (i >= propertiesCount - 1)
+			{
+				paramDelimiter = string.Empty;
+			}
+
+			if (property.PropertyType == typeof(int))
+			{
+				WriteLine("\t\t\t\t\t{0} = {1} {2}", propertyName, "i", paramDelimiter);
+			}
+			else if (property.PropertyType == typeof(string))
+			{
+			   WriteLine("\t\t\t\t\t{0} = \"{0} {1}\" {2}", propertyName, "i", paramDelimiter);
+			}
+			else
+			{
+			   WriteLine("\t\t\t\t\t{0} = {1} {2}", propertyName, "null", paramDelimiter);
+			}
+		}
+	}
+	
+	public void WriteInsertSql(System.Reflection.PropertyInfo[] properties )
+	{
+		string keyPropertyName = ModelTypeKeyPropertyName;
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//set constructor parameters	
+
+		string fieldsCommaSeparatedList = string.Empty;
+		string valuesCommaSeparatedList = string.Empty;
+
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyType = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName.LowerFirstLetter();
+			string paramDelimiter = ", ";
+			if (i >= propertiesCount - 1)
+			{
+				paramDelimiter = string.Empty;
+			}
+
+			if (propertyName != keyPropertyName)
+			{
+			   //generates fields list
+				fieldsCommaSeparatedList += propertyName;
+				if (i < propertiesCount - 1)
+				{
+					fieldsCommaSeparatedList += paramDelimiter;
+				}
+				
+				//generates values list
+				valuesCommaSeparatedList += "?";
+				if (i < propertiesCount - 1)
+				{
+					valuesCommaSeparatedList += paramDelimiter;
+			   }
+			}
+			
+		}
+		string insertSql = string.Format("INSERT INTO {0}({1}) VALUES({2})", modelTypeNamePlural, fieldsCommaSeparatedList, valuesCommaSeparatedList) ;
+		Write(insertSql);
+	}
+	
+	public void WriteUpdateSql(System.Reflection.PropertyInfo[] properties )
+	{
+		string keyPropertyName = ModelTypeKeyPropertyName;
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//set constructor parameters	
+
+		string fieldAssignmentsCommaSeparatedList = string.Empty;
+
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyType = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName.LowerFirstLetter();
+			string paramDelimiter = ", ";
+			if (i >= propertiesCount - 1)
+			{
+				paramDelimiter = string.Empty;
+			}
+
+			if (propertyName != keyPropertyName)//keyPropertyName is meant to be auutogenerated in the db
+			{
+			   //generates fields list
+				fieldAssignmentsCommaSeparatedList += string.Format("\t\t\t\t{0} = ?",propertyName);
+				if (i < propertiesCount - 1)
+				{
+					fieldAssignmentsCommaSeparatedList += paramDelimiter+"\n";
+				}
+				
+			}
+			
+		}
+		string updateSql = string.Format("UPDATE {0} SET \n {1} \n \t\t\tWHERE ({2} = ?)", modelTypeNamePlural, fieldAssignmentsCommaSeparatedList, keyPropertyName) ;
+		Write(updateSql);
+	}
+	
+	public void WriteCreateTableSql(System.Reflection.PropertyInfo[] properties )
+	{
+		string keyPropertyName = ModelTypeKeyPropertyName;
+		string modelsNamespace = ModelType.Namespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+
+		int propertiesCount = properties.Length;
+		//set constructor parameters	
+
+		string fieldAssignmentsCommaSeparatedList = string.Empty;
+
+		for (int i = 0; i < propertiesCount; i++)
+		{
+			var property = properties[i];
+			string propertyTypeName = property.PropertyType.GetTypeFriendlyName();
+			string propertyName = property.Name;
+			string propertyNameLowerCase = propertyName.LowerFirstLetter();
+			string paramDelimiter = ", ";
+			if (i >= propertiesCount - 1)
+			{
+				paramDelimiter = string.Empty;
+			}
+
+			var currentPropertyType = property.PropertyType;
+
+			string databaseType = GetDatabaseType(currentPropertyType);
+		
+			if (propertyName != keyPropertyName)//keyPropertyName is meant to be auutogenerated in the db
+			{
+			   //generates fields list
+				fieldAssignmentsCommaSeparatedList += string.Format("\t\t\t\t{0} {1}",propertyName, databaseType);
+				if (i < propertiesCount - 1)
+				{
+					fieldAssignmentsCommaSeparatedList += paramDelimiter+"\n";
+				}
+				
+			}
+			
+		}
+		string createTableSql =
+			  "CREATE TABLE" + modelTypeNamePlural + "\n"
+			+ "\t\t\t(\n"
+			+ "\t\t\t\t"+keyPropertyName + "  INTEGER PRIMARY KEY  NOT NULL ,\n"
+			+ fieldAssignmentsCommaSeparatedList
+			+ ");";
+
+		Write(createTableSql);
+	}
+
+	public string GetDatabaseType(Type type)
+	{
+		string databaseType = string.Empty;
+		if(type == typeof(int)) 
+		{
+			databaseType = "INTEGER";
+		}
+		else if (type == typeof(string))
+		{ 
+			databaseType = "VARCHAR(32)";
+		}
+		else if (type == typeof(double))
+		{ 
+			databaseType = "DOUBLE";
+		}
+		else if (type == typeof(DateTime))
+		{
+		   databaseType = "DATETIME";
+		}
+		else
+		{
+			databaseType = "(NOTFOUND FOR - "+type.Name+")";
+		}
+		return databaseType;
+	}
+}
+#>

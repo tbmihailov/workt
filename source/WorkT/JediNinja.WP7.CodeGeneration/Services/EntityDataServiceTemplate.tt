@@ -1,0 +1,162 @@
+﻿<#@ Assembly Name="$(SolutionDir)\Libs\Utils\JediNinja.WP7.CodeGeneration.Utils.dll" #>
+<#@ Import Namespace="JediNinja.WP7.CodeGeneration.Utils" #>
+<#+
+// <copyright file="EntityDataServiceTemplate.tt.tt" company="Microsoft">
+//  Copyright © Microsoft. All Rights Reserved.
+// </copyright>
+
+/// <summary>
+/// Generates interface for EntityDataService for working with data of a specific entity type
+/// </summary>
+public class EntityDataServiceTemplate : Template
+{
+
+	public string MainDataContextName { get; set; }                                                                      
+	
+	public Type ModelType { get; set; }
+	public string ModelTypeKeyPropertyName { get; set; }
+	public string ModelsNamespace { get; set; }
+	public string ModelTypeNamePlural { get; set; } 
+	
+	public string EntityDataContextsNamespace { get; set; }
+	public string ServicesNamespace { get; set; }
+
+	public override string TransformText()
+	{
+		string mainDataContextName = MainDataContextName;
+		string modelsNamespace = ModelsNamespace;
+		string modelTypeName = ModelType.Name;
+		string modelTypeNameFull = ModelType.FullName;
+		string modelTypeNameLowerFirstLetter = modelTypeName.LowerFirstLetter();
+		string modelTypeNameUpperCase = modelTypeName.ToUpper();
+
+		string modelTypeKeyPropertyName = ModelTypeKeyPropertyName;
+		string modelTypeKeyPropertyNameLowerFirstLetter = modelTypeKeyPropertyName.LowerFirstLetter();
+																				
+		string modelTypeNamePlural = ModelTypeNamePlural;
+		string modelTypeNamePluralLowerFirstLetter = modelTypeNamePlural.LowerFirstLetter();
+																																						  
+		string dataContextsNamespace = EntityDataContextsNamespace;
+		string dataContextInterfaceName = string.Format("I{0}DataContext", modelTypeName);
+		string dataContextName = string.Format("{0}DataContext", modelTypeName);
+		string dataContextNameLowerFirstLetter = dataContextName.LowerFirstLetter();
+
+		string servicesNamespace = ServicesNamespace;                                                                                     
+
+
+		System.Reflection.PropertyInfo keyProperty = ModelType.GetProperty(modelTypeKeyPropertyName);
+		System.Reflection.PropertyInfo[] properties = ModelType.GetProperties();
+																					
+		int propertiesCount = properties.Length;
+#>
+using System;
+using WorkT.Data;
+using WorkT.Model;
+using System.Collections.Generic;
+
+namespace <#= servicesNamespace #>
+{
+	public class <#= modelTypeNamePlural #>DataService : <#= servicesNamespace #>.I<#= modelTypeNamePlural #>DataService
+	{
+		<#= mainDataContextName #> _context;
+
+		public <#= modelTypeNamePlural #>DataService()
+		{
+
+		}
+
+		public <#= modelTypeNamePlural #>DataService(string databaseFileName)
+			: this()
+		{
+			_context = new <#= mainDataContextName #>(databaseFileName);
+		}
+
+		public void Save(Action<OperationResult> callBack, <#= modelTypeNameFull #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			try
+			{
+				if (<#= modelTypeNameLowerFirstLetter #> == null)
+				{
+					throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null!");
+				}
+
+				_context.InsertOrUpdate<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+
+				var successfullResult = new OperationResult();
+				callBack(successfullResult);
+			}
+			catch (Exception e)
+			{
+				var errorResult = new OperationResult(e);
+				callBack(errorResult);
+			}
+
+		}
+
+		public void Delete(Action<OperationResult> callBack, <#= modelTypeNameFull #> <#= modelTypeNameLowerFirstLetter #>)
+		{
+			try
+			{
+				if (<#= modelTypeNameLowerFirstLetter #> == null)
+				{
+					throw new ArgumentNullException("<#= modelTypeNameLowerFirstLetter #> must not be null!");
+				}
+
+				_context.Delete<#= modelTypeName #>(<#= modelTypeNameLowerFirstLetter #>);
+
+				var successfullResult = new OperationResult();
+				callBack(successfullResult);
+			}
+			catch (Exception e)
+			{
+				var errorResult = new OperationResult(e);
+				callBack(errorResult);
+			}
+		}
+
+		public void GetAll<#= modelTypeNamePlural #>(Action<OperationResult<IEnumerable<<#= modelTypeName #>>>> callBack)
+		{
+			try
+			{
+				var <#= modelTypeNamePluralLowerFirstLetter #> = _context.GetAll<#= modelTypeNamePlural #>();
+
+				var successfullResult = new OperationResult<IEnumerable<<#= modelTypeName #>>>(<#= modelTypeNamePluralLowerFirstLetter #>);
+				callBack(successfullResult);
+			}
+			catch (Exception e)
+			{
+				var errorResult = new OperationResult<IEnumerable<<#= modelTypeName #>>>(e);
+				callBack(errorResult);
+			}
+		}
+
+		public void Get<#= modelTypeName #>ById(Action<OperationResult<<#= modelTypeName #>>> callBack, int <#= modelTypeKeyPropertyNameLowerFirstLetter #>)
+		{
+			try
+			{
+				if (<#= modelTypeKeyPropertyNameLowerFirstLetter #> == 0)
+				{
+					throw new ArgumentNullException("<#= modelTypeKeyPropertyNameLowerFirstLetter #> must be greater than 0!");
+				}
+
+				var <#= modelTypeNamePluralLowerFirstLetter #> = _context.Get<#= modelTypeName #>ById(<#= modelTypeKeyPropertyNameLowerFirstLetter #>);
+
+				var successfullResult = new OperationResult<<#= modelTypeName #>>(<#= modelTypeNamePluralLowerFirstLetter #>);
+				callBack(successfullResult);
+			}
+			catch (Exception e)
+			{
+				var errorResult = new OperationResult<<#= modelTypeName #>>(e);
+				callBack(errorResult);
+			}
+		}
+	}
+}
+
+
+<#+
+		return this.GenerationEnvironment.ToString();
+	}
+
+}
+#>
